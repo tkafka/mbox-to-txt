@@ -127,12 +127,16 @@ def part_to_text(part):
 
     text = part.get_payload(decode=True).decode(encoding=charset, errors="ignore")
 
+    # this leaves ascii-only emails, which we don't want
+    """
     try:
         text = text.encode("ascii").decode("ascii")
     except UnicodeEncodeError:
         return None
     except UnicodeDecodeError:
         return None
+    """
+
     if part.get_param("format") == "flowed":
         text = unflow_text(text, part.get_param("delsp", False))
     return text
@@ -188,9 +192,10 @@ def main():
 
     mb = mailbox.mbox(args.mbox_file, create=False)
     for text in mailbox_text(mb, args.author):
-        print(text)
+        text_utf = text.encode("utf-8")
+        print(text_utf)
         print("\n----\n")
-        sys.stderr.write(text[:20] + "\n")
+        sys.stderr.write(text_utf[:20] + "\n")
 
 
 if __name__ == "__main__":
