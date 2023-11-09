@@ -17,7 +17,7 @@
 import argparse
 import mailbox
 import re
-
+import sys
 
 # Patterns of text to delete from messages.
 DELETION_PATTERS = [
@@ -128,7 +128,7 @@ def part_to_text(part):
     text = part.get_payload(decode=True).decode(encoding=charset, errors="ignore")
 
     try:
-        text = text.encode('ascii').decode('ascii')
+        text = text.encode("ascii").decode("ascii")
     except UnicodeEncodeError:
         return None
     except UnicodeDecodeError:
@@ -189,6 +189,8 @@ def main():
     mb = mailbox.mbox(args.mbox_file, create=False)
     for text in mailbox_text(mb, args.author):
         print(text)
+        print("\n----\n")
+        sys.stderr.write(text[:20] + "\n")
 
 
 if __name__ == "__main__":
