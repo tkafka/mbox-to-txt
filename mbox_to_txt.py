@@ -22,17 +22,14 @@ import re
 # Patterns of text to delete from messages.
 DELETION_PATTERS = [
     # Reply text:
-    r'(\n|^)On.*\n?.*wrote:\n+(.|\n)*$',
-    r'(\n|^)From:(.|\n)*$',
-
+    r"(\n|^)On.*\n?.*wrote:\n+(.|\n)*$",
+    r"(\n|^)From:(.|\n)*$",
     # Forwarded messages:
-    r'(\n|^)---------- Forwarded message ----------(.|\n)*$',
-
+    r"(\n|^)---------- Forwarded message ----------(.|\n)*$",
     # PGP:
-    r'(\n|^)-----BEGIN PGP MESSAGE-----\n(.|\n)*-----END PGP MESSAGE-----\n',
-
+    r"(\n|^)-----BEGIN PGP MESSAGE-----\n(.|\n)*-----END PGP MESSAGE-----\n",
     # Embedded links:
-    r'<[^ ]+>',
+    r"<[^ ]+>",
 ]
 
 
@@ -44,7 +41,7 @@ def munge_message(text):
     :return: The munged e-mail message.
     """
     for pattern in DELETION_PATTERS:
-        text = re.sub(pattern, '', text)
+        text = re.sub(pattern, "", text)
     return text
 
 
@@ -56,7 +53,7 @@ def unquoted_line(line):
     :return: (unquoted line, quote depth).
     """
     quote_depth = 0
-    while line.startswith('>'):
+    while line.startswith(">"):
         line = line[1:]
         quote_depth += 1
     return line, quote_depth
@@ -69,7 +66,7 @@ def unstuff_line(line):
     :param line: The (possibly stuffed) message line.
     :return: The unstuffed message line.
     """
-    if line.startswith(' '):
+    if line.startswith(" "):
         return line[1:]
     return line
 
@@ -84,7 +81,7 @@ def unflow_line(line, delsp):
     """
     if len(line) < 1:
         return line, False
-    if line.endswith(' '):
+    if line.endswith(" "):
         if delsp:
             line = line[:-1]
         return line, True
@@ -99,8 +96,8 @@ def unflow_text(text, delsp):
     :param delsp: Whether or not soft-break spaces should be deleted.
     :return: The processed message.
     """
-    full_line = ''
-    full_text = ''
+    full_line = ""
+    full_text = ""
     lines = text.splitlines()
     for line in lines:
         (line, quote_depth) = unquoted_line(line)
@@ -108,8 +105,8 @@ def unflow_text(text, delsp):
         (line, soft_break) = unflow_line(line, delsp)
         full_line += line
         if not soft_break:
-            full_text += '>' * quote_depth + full_line + '\n'
-            full_line = ''
+            full_text += ">" * quote_depth + full_line + "\n"
+            full_line = ""
     return full_text
 
 
@@ -122,20 +119,22 @@ def part_to_text(part):
     :param part: E-mail message part.
     :return: Message text.
     """
-    if part.get_content_type() != 'text/plain':
+    if part.get_content_type() != "text/plain":
         return None
     charset = part.get_content_charset()
     if not charset:
         return None
-    text = str(part.get_payload(decode=True), encoding=charset, errors='ignore')
+
+    text = part.get_payload(decode=True).decode(encoding=charset, errors="ignore")
+
     try:
-        text = str(text.encode('ascii'), 'ascii')
+        text = text.encode('ascii').decode('ascii')
     except UnicodeEncodeError:
         return None
     except UnicodeDecodeError:
         return None
-    if part.get_param('format') == 'flowed':
-        text = unflow_text(text, part.get_param('delsp', False))
+    if part.get_param("format") == "flowed":
+        text = unflow_text(text, part.get_param("delsp", False))
     return text
 
 
@@ -148,7 +147,7 @@ def message_to_text(message):
     :param message: E-mail message.
     :return: Message text.
     """
-    text = ''
+    text = ""
     for part in message.walk():
         part = part_to_text(part)
         if part:
@@ -167,13 +166,13 @@ def mailbox_text(mb, author):
     :return: Nothing.
     """
     for message in mb:
-        if not message['From']:
+        if not message["From"]:
             continue
-        if author not in message['From']:
+        if author not in message["From"]:
             continue
-        if not message['To']:
+        if not message["To"]:
             continue
-        if author in message['To']:
+        if author in message["To"]:
             continue
         text = message_to_text(message)
         text = munge_message(text)
@@ -182,9 +181,9 @@ def mailbox_text(mb, author):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Convert mbox to text file.')
-    parser.add_argument('mbox_file', help='.mbox file to parse')
-    parser.add_argument('author', help='author to exclude')
+    parser = argparse.ArgumentParser(description="Convert mbox to text file.")
+    parser.add_argument("mbox_file", help=".mbox file to parse")
+    parser.add_argument("author", help="author to exclude")
     args = parser.parse_args()
 
     mb = mailbox.mbox(args.mbox_file, create=False)
@@ -192,5 +191,5 @@ def main():
         print(text)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
