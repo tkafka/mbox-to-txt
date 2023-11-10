@@ -1,5 +1,11 @@
 # Mbox-to-Text
 
+A fork of [Sydius/mbox-to-txt](https://github.com/Sydius/mbox-to-txt) that also extracts threads (eg. for OpenAI Assistant builder) - see and run `mbox_to_txt_threads.py`.
+
+Note that email filtering doesn't yet work for threads.
+
+---
+
 `mbox_to_txt.py` is a simple Python script that takes an mbox file and converts it into a text file.
 
 It was created to process a Gmail sent box into a text file that could be used as a corpus for other tools. As such, it
